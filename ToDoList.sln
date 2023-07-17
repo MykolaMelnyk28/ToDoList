@@ -5,6 +5,14 @@ VisualStudioVersion = 17.5.33424.131
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDoList", "ToDoList\ToDoList.csproj", "{99CB7704-0C04-4E3E-87CC-A04C3A4A5555}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DB", "DB", "{D59C14B6-36AD-4388-AC9A-AA3D83AE2E85}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDoList.DB", "ToDoList.DB\ToDoList.DB.csproj", "{C4585653-FA48-4DAF-B176-D7D981CA6020}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{77CD9EF9-9A21-4D8F-91A7-23E872F06E1F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDoList.Shared", "ToDoList.Shared\ToDoList.Shared.csproj", "{DDF59269-D05E-4360-8ECD-8A293D145A0A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,9 +23,21 @@ Global
 		{99CB7704-0C04-4E3E-87CC-A04C3A4A5555}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99CB7704-0C04-4E3E-87CC-A04C3A4A5555}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99CB7704-0C04-4E3E-87CC-A04C3A4A5555}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4585653-FA48-4DAF-B176-D7D981CA6020}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4585653-FA48-4DAF-B176-D7D981CA6020}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4585653-FA48-4DAF-B176-D7D981CA6020}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4585653-FA48-4DAF-B176-D7D981CA6020}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDF59269-D05E-4360-8ECD-8A293D145A0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDF59269-D05E-4360-8ECD-8A293D145A0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDF59269-D05E-4360-8ECD-8A293D145A0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDF59269-D05E-4360-8ECD-8A293D145A0A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C4585653-FA48-4DAF-B176-D7D981CA6020} = {D59C14B6-36AD-4388-AC9A-AA3D83AE2E85}
+		{DDF59269-D05E-4360-8ECD-8A293D145A0A} = {77CD9EF9-9A21-4D8F-91A7-23E872F06E1F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2A6B8523-C6BC-4B20-A0C7-8E4C1A5C376D}
