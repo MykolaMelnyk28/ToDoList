@@ -1,0 +1,34 @@
+﻿@{
+	ViewData["Title"] = "Create";
+}
+@model CreateModel
+
+<form method="post" asp-action="Create" asp-controller="Task">
+	<input type="hidden" asp-for="@Model.Task.StateId"/>
+	<input type="hidden" asp-for="@Model.Task.UserId"/>
+	<div>
+		<p>
+			<label asp-for="@Model.Task.Name">Name</label>
+			<input type="text" asp-for="@Model.Task.Name"/>
+			<span asp-validation-for="@Model.Task.Name"/>
+		</p>
+		<p>
+			<label asp-for="@Model.Task.Content">Content</label>
+			<textarea asp-for="@Model.Task.Content"></textarea>
+			<span asp-validation-for="@Model.Task.Content"/>
+		</p>
+		<p>
+			<label asp-for="@Model.Task.PriorityId">Priority</label>
+			<select asp-for="@Model.Task.PriorityId">
+				@foreach(var p in Model.Priorities)
+				{
+					<option value="@p.Id">@p.Name</option>
+				}
+			</select>
+			<span asp-validation-for="@Model.Task.PriorityId"/>
+		</p>
+		<p>
+			<input type="submit" value="Create"/>
+		</p>
+	</div>
+</form>
