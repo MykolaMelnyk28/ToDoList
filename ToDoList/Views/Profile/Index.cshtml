@@ -3,27 +3,80 @@
 }
 @model IndexModel
 
-@*!!!Доробити!!!*@
+<form method="post">
+    <input type="hidden" asp-for="@Model.User.Id"/>
+    <input type="hidden" asp-for="@Model.User.Password"/>
+    <div class="container">
+        <h1>Profile</h1>
 
-<div>
-    <p>
-        <span>Login:</span>
-        <p>@Model.User.Login</p>
-    </p>
-    <p>
-        <span>First name:</span>
-        <p>@Model.User.FirstName</p>
-    </p>
-    <p>
-        <span>Last name:</span>
-        <p>@Model.User.LastName</p>
-    </p>
-    <p>
-        <span>Email:</span>
-        <p>@Model.User.Email</p>
-    </p>
-    <p>
-        <span>Phone:</span>
-        <p>@Model.User.Phone</p>
-    </p>
-</div>
+        <div class="row">
+            <div class="col-md-6">
+                <h4>First Name</h4>
+                <input class="profile-input" id="firstNameInput" disabled asp-for="@Model.User.FirstName" />
+            </div>
+
+            <div class="col-md-6">
+                <h4>Last Name</h4>
+                <input class="profile-input" id="lastNameInput" disabled asp-for="@Model.User.LastName" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h4>Phone</h4>
+                <input class="profile-input" id="phoneInput" disabled asp-for="@Model.User.Phone" />
+            </div>
+
+            <div class="col-md-6">
+                <h4>Email</h4>
+                <input class="profile-input" id="emailInput" disabled asp-for="@Model.User.Email" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h4>Login</h4>
+                <input class="profile-input" id="loginInput" disabled asp-for="@Model.User.Login" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <button type="button" id="editButton" class="btn btn-primary">Edit</button>
+            </div>
+            <div class="col-md-12">
+                <button type="submit" id="saveButton" class="btn btn-primary collapse">Save</button>
+            </div>
+            <div class="col-md-12">
+                <button type="button" id="cancelButton" class="btn btn-primary collapse">Cancel</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    var inputs = document.getElementsByClassName("profile-input");
+    var editButton = document.getElementById('editButton');
+    var saveButton = document.getElementById('saveButton');
+    var cancelButton = document.getElementById('cancelButton');
+
+    editButton.addEventListener('click', function () {
+        editButton.classList.add("collapse");
+        saveButton.classList.remove("collapse");
+        cancelButton.classList.remove("collapse");
+
+        for(let input of inputs) {
+            input.disabled = false;
+        }
+    });
+
+    cancelButton.addEventListener('click', function() {
+        editButton.classList.remove("collapse");
+        saveButton.classList.add("collapse");
+        cancelButton.classList.add("collapse");
+
+        for(let input of inputs) {
+            input.disabled = true;
+        }
+    });
+</script>
