@@ -1,16 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using ToDoList.DB;
 using ToDoList.Models.Profile;
 using ToDoList.Shared.Entity;
-using ToDoList.Shared.Helpers;
 
 namespace ToDoList.Controllers
 {
-    [Authorize]
+	[Authorize]
     public class ProfileController : Controller
     {
         private readonly ILogger<ProfileController> _logger;

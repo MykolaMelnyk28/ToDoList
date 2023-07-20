@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using ToDoList.DB;
 
+WebApplication.Create();
+
 var builder = WebApplication.CreateBuilder();
 
 builder.Services.AddControllersWithViews();

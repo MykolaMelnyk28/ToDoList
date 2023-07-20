@@ -30,5 +30,22 @@ namespace ToDoList.Shared.Entity
 		public string Password { get; set; }
 
 		public IEnumerable<TaskEntity> Tasks { get; set; }
-	}
+
+        public override bool Equals(object? obj)
+        {
+            return obj is UserEntity entity &&
+                   Id == entity.Id &&
+                   Login == entity.Login &&
+                   FirstName == entity.FirstName &&
+                   LastName == entity.LastName &&
+                   Email == entity.Email &&
+                   Phone == entity.Phone &&
+                   Password == entity.Password;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id, Login, FirstName, LastName, Email, Phone, Password);
+        }
+    }
 }

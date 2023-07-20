@@ -41,7 +41,7 @@ namespace ToDoList.DB
 				x.HasKey(k => k.Id);
 				x.Property(x => x.Name).HasMaxLength(255);
 				x.HasIndex(x => x.Name).IsUnique();
-				x.HasOne(x => x.Sate).WithMany(x => x.Tasks).HasForeignKey(f => f.StateId);
+				x.HasOne(x => x.State).WithMany(x => x.Tasks).HasForeignKey(f => f.StateId);
 				x.HasOne(x => x.Priority).WithMany(x => x.Tasks).HasForeignKey(f => f.PriorityId);
 				x.HasOne(x => x.User).WithMany(x => x.Tasks).HasForeignKey(f => f.UserId);
 			});

@@ -4,7 +4,7 @@
 @model EditModel
 
 <form method="post" asp-action="Edit" asp-controller="Task">
-	<input type="hidden" asp-for="@Model.Task.StateId"/>
+	<input type="hidden" asp-for="@Model.Task.Id"/>
 	<input type="hidden" asp-for="@Model.Task.UserId"/>
 	<div>
 		<p>
@@ -20,7 +20,7 @@
 		<p>
 			<label asp-for="@Model.Task.PriorityId">Priority</label>
 			<select asp-for="@Model.Task.PriorityId">
-				@foreach(var p in Model.Priorities)
+				@foreach(var p in PriorityEntityHelper.DefaultPriorities)
 				{
 					<option value="@p.Id">@p.Name</option>
 				}
@@ -28,7 +28,17 @@
 			<span asp-validation-for="@Model.Task.PriorityId"/>
 		</p>
 		<p>
-			<input type="submit" value="Create"/>
+			<label asp-for="@Model.Task.StateId">State</label>
+			<select asp-for="@Model.Task.StateId">
+				@foreach(var p in StateEntityHelper.DefaultStates)
+				{
+					<option value="@p.Id">@p.Name</option>
+				}
+			</select>
+			<span asp-validation-for="@Model.Task.StateId"/>
+		</p>
+		<p>
+			<input type="submit" value="Edit"/>
 		</p>
 	</div>
 </form>

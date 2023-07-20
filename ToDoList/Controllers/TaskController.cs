@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using ToDoList.DB;
 using ToDoList.Models.Task;
@@ -74,12 +75,24 @@ namespace ToDoList.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(TaskEntity? task)
+        public async Task<IActionResult> Edit(TaskEntity task)
         {
             try
             {
-                _db.Tasks.Update(task);
+                var existingTask = await _db.Tasks.FindAsync(task.Id);
+
+                if(existingTask == null)
+                {
+                    return NotFound();
+                }
+
+                _db.Entry(existingTask).CurrentValues.SetValues(task);
                 await _db.SaveChangesAsync();
+            }
+            catch(DbUpdateConcurrencyException ex)
+            {
+                _logger.LogError(ex, "Concurrency error occurred while editing a task.");
+                return RedirectToAction("ConcurrencyError");
             }
             catch(Exception ex)
             {
