@@ -3,7 +3,7 @@
 }
 @model IndexModel
 
-<form method="post">
+<form method="post" asp-controller="Profile" asp-action="Index">
     <input type="hidden" asp-for="@Model.User.Id"/>
     <input type="hidden" asp-for="@Model.User.Password"/>
     <div class="container">

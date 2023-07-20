@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Security.Claims;
@@ -39,21 +41,18 @@ namespace ToDoList.Controllers
                 FirstName = claims.FindFirstValue("FirstName"),
                 LastName = claims.FindFirstValue("LastName")
             };
+
             return View(new IndexModel { User = user });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Index(UserEntity user)
+        public async Task<IActionResult> Index(IndexModel model)
         {
-            if(!ModelState.IsValid)
-            {
-                return View(user);
-            }
-
             try
             {
-                _db.Users.Update(user);
+                _db.Users.Update(model.User);
                 await _db.SaveChangesAsync();
+                SetUser(model.User);
             }
             catch(Exception ex)
             {
@@ -63,5 +62,24 @@ namespace ToDoList.Controllers
 
             return RedirectToAction("Index");
         }
+
+        private async Task SetUser(UserEntity user)
+        {
+			List<Claim> claims = new List<Claim>
+			{
+				new Claim("Id", user.Id.ToString()),
+				new Claim("Login", user.Login),
+				new Claim("Password", user.Password),
+				new Claim("Email", user.Email),
+				new Claim("Phone", user.Phone),
+				new Claim("FirstName", user.FirstName),
+				new Claim("LastName", user.LastName)
+			};
+
+			ClaimsIdentity identity = new ClaimsIdentity(claims, "ApplicationCookie");
+			ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+
+			await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+		}
     }
 }
