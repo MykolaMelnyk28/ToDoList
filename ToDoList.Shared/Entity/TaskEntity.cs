@@ -14,8 +14,24 @@ namespace ToDoList.Shared.Entity
 		public int? UserId { get; set; }
 		public int? StateId { get; set; }
 
-		public StateEntity? Sate { get; set; }
+		public StateEntity? State { get; set; }
 		public PriorityEntity? Priority { get; set; }
 		public UserEntity? User { get; set; }
-	}
+
+        public override bool Equals(object? obj)
+        {
+            return obj is TaskEntity entity &&
+                   Id == entity.Id &&
+                   Name == entity.Name &&
+                   Content == entity.Content &&
+                   PriorityId == entity.PriorityId &&
+                   UserId == entity.UserId &&
+                   StateId == entity.StateId;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id, Name, Content, PriorityId, UserId, StateId);
+        }
+    }
 }

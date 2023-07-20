@@ -95,15 +95,15 @@ namespace ToDoList.Controllers
         private async Task _SignIn(UserEntity user)
         {
             List<Claim> claims = new List<Claim>
-        {
-            new Claim("Id", user.Id.ToString()),
-            new Claim("Login", user.Login),
-            new Claim("Password", user.Password),
-            new Claim("Email", user.Email),
-            new Claim("Phone", user.Phone),
-            new Claim("FirstName", user.FirstName),
-            new Claim("LastName", user.LastName)
-        };
+            {
+                new Claim("Id", user.Id.ToString()),
+                new Claim("Login", user.Login),
+                new Claim("Password", user.Password),
+                new Claim("Email", user.Email),
+                new Claim("Phone", user.Phone),
+                new Claim("FirstName", user.FirstName),
+                new Claim("LastName", user.LastName)
+            };
 
             ClaimsIdentity identity = new ClaimsIdentity(claims, "ApplicationCookie");
             ClaimsPrincipal principal = new ClaimsPrincipal(identity);

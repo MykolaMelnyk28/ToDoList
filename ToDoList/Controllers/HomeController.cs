@@ -1,9 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using System.Linq;
 using ToDoList.DB;
 using ToDoList.Models;
+using ToDoList.Shared;
+using ToDoList.Models.Home;
+using ToDoList.Shared.Entity;
 
 namespace ToDoList.Controllers
 {
@@ -24,18 +29,68 @@ namespace ToDoList.Controllers
             ViewBag.IsAuthenticated = User.Identity.IsAuthenticated;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            List<TaskEntity> tasks = _db.Tasks.Include(x => x.State).Include(x => x.Priority).ToList();
+            return View(new IndexViewModel { Tasks = tasks });
         }
 
-        [Authorize]
-        public IActionResult Home()
-        {
-            return View();
-        }
+		[HttpPost]
+		public async Task<IActionResult> Sort(IndexViewModel model)
+		{
+			IQueryable<TaskEntity> query = _db.Tasks;
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+			switch(model.SortBy)
+			{
+				case "Name":
+					query = model.IsDescending ? query.OrderByDescending(t => t.Name) : query.OrderBy(t => t.Name);
+					break;
+				case "Priority":
+					query = model.IsDescending ? query.OrderByDescending(t => t.PriorityId) : query.OrderBy(t => t.PriorityId);
+					break;
+				case "State":
+					query = model.IsDescending ? query.OrderByDescending(t => t.StateId) : query.OrderBy(t => t.StateId);
+					break;
+				default:
+					query = query.OrderBy(t => t.Name);
+					break;
+			}
+
+			List<TaskEntity> tasks = await query.Include(x => x.State)
+											   .Include(x => x.Priority)
+											   .ToListAsync();
+
+			return View("Index", new IndexViewModel { Tasks = tasks, SortBy = model.SortBy, IsDescending = model.IsDescending });
+		}
+
+		[HttpPost]
+		public IActionResult Search(IndexViewModel model)
+		{
+			IQueryable<TaskEntity> query = _db.Tasks.Include(x => x.State).Include(x => x.Priority);
+
+			if (!string.IsNullOrWhiteSpace(model.SearchValue))
+			{
+				switch(model.SearchBy)
+				{
+					case "Priority":
+						query = query.Where(x => x.Priority.Name.StartsWith(model.SearchValue));
+						break;
+					case "State":
+						query = query.Where(x => x.State.Name.StartsWith(model.SearchValue));
+						break;
+					default:
+						query = query.Where(x => x.Name.StartsWith(model.SearchValue));
+						break;
+				}
+			}
+			
+
+			List<TaskEntity> tasks = query.ToList();
+
+			return View("Index", new IndexViewModel { Tasks = tasks, SortBy = model.SortBy, IsDescending = model.IsDescending, SearchBy = model.SearchBy, SearchValue = model.SearchValue });
+		}
+
+		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
