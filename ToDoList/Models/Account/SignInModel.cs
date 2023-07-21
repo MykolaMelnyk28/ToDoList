@@ -4,6 +4,6 @@ namespace ToDoList.Models.Account
 {
 	public class SignInModel
 	{
-		public UserEntity User { get; set; }
+		public UserEntity User { get; set; } = new UserEntity { Email = "email@domen.domen" };
 	}
 }
