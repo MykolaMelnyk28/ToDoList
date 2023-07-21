@@ -1,14 +1,15 @@
-﻿using System.ComponentModel;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.ComponentModel.DataAnnotations;
 
 namespace ToDoList.Shared.Entity
 {
 	public class UserEntity
 	{
+		[BindNever]
 		[Key]
 		public int Id { get; set; }
 
-		[Required]
+		[Required(ErrorMessage = "Enter login")]
 		[StringLength(24, MinimumLength = 6)]
 		public string Login { get; set; }
 
@@ -18,18 +19,19 @@ namespace ToDoList.Shared.Entity
 		[RegularExpression("^\\w{0,24}$")]
 		public string? LastName { get; set; }
 
-		[Required]
-		[EmailAddress]
+		[Required(ErrorMessage = "Enter login")]
+        [EmailAddress(ErrorMessage = "Invalid email address")]
 		public string Email { get; set; }
 
-		[Phone]
+		[Phone(ErrorMessage = "Invalid phone address")]
 		public string? Phone { get; set; }
 
-		[Required]
-		[RegularExpression("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\w\\d\\s]).{8,}$")]
+		[Required(ErrorMessage = "Enter password")]
+		[RegularExpression("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\w\\d\\s]).{8,}$", ErrorMessage = "Invalid password")]
 		public string Password { get; set; }
 
-		public IEnumerable<TaskEntity> Tasks { get; set; }
+        [BindNever]
+        public IEnumerable<TaskEntity>? Tasks { get; set; }
 
         public override bool Equals(object? obj)
         {
