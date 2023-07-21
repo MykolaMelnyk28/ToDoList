@@ -1,12 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
-using System.Linq;
 using ToDoList.DB;
 using ToDoList.Models;
-using ToDoList.Shared;
 using ToDoList.Models.Home;
 using ToDoList.Shared.Entity;
 
@@ -42,9 +39,6 @@ namespace ToDoList.Controllers
 
 			switch(model.SortBy)
 			{
-				case "Name":
-					query = model.IsDescending ? query.OrderByDescending(t => t.Name) : query.OrderBy(t => t.Name);
-					break;
 				case "Priority":
 					query = model.IsDescending ? query.OrderByDescending(t => t.PriorityId) : query.OrderBy(t => t.PriorityId);
 					break;
@@ -52,9 +46,9 @@ namespace ToDoList.Controllers
 					query = model.IsDescending ? query.OrderByDescending(t => t.StateId) : query.OrderBy(t => t.StateId);
 					break;
 				default:
-					query = query.OrderBy(t => t.Name);
-					break;
-			}
+                    query = model.IsDescending ? query.OrderByDescending(t => t.Name) : query.OrderBy(t => t.Name);
+                    break;
+            }
 
 			List<TaskEntity> tasks = await query.Include(x => x.State)
 											   .Include(x => x.Priority)
