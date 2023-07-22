@@ -1,22 +1,24 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.ComponentModel.DataAnnotations;
 
 namespace ToDoList.Shared.Entity
 {
-	public class UserEntity
+    public class UserEntity
 	{
 		[BindNever]
 		[Key]
-		public int Id { get; set; }
+        [HiddenInput]
+        public int Id { get; set; }
 
 		[Required(ErrorMessage = "Enter login")]
 		[StringLength(24, MinimumLength = 6)]
 		public string Login { get; set; }
 
-		[RegularExpression("^\\w{0,24}$")]
+		[RegularExpression("^\\w{0,24}$", ErrorMessage = "Invalid value")]
 		public string? FirstName { get; set; }
 
-		[RegularExpression("^\\w{0,24}$")]
+		[RegularExpression("^\\w{0,24}$", ErrorMessage = "Invalid value")]
 		public string? LastName { get; set; }
 
 		[Required(ErrorMessage = "Enter login")]
@@ -35,6 +37,13 @@ namespace ToDoList.Shared.Entity
 
         public override bool Equals(object? obj)
         {
+            if(this == obj)
+                return true;
+            else if(obj == null)
+                return false;
+            else if(GetHashCode() != obj.GetHashCode())
+                return false;
+
             return obj is UserEntity entity &&
                    Id == entity.Id &&
                    Login == entity.Login &&

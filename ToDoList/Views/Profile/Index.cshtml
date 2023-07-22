@@ -3,80 +3,62 @@
 }
 @model IndexModel
 
-<form method="post" asp-controller="Profile" asp-action="Index">
-    <input type="hidden" asp-for="@Model.User.Id"/>
-    <input type="hidden" asp-for="@Model.User.Password"/>
-    <div class="container">
-        <h1>Profile</h1>
-
-        <div class="row">
-            <div class="col-md-6">
-                <h4>First Name</h4>
-                <input class="profile-input" id="firstNameInput" disabled asp-for="@Model.User.FirstName" />
-            </div>
-
-            <div class="col-md-6">
-                <h4>Last Name</h4>
-                <input class="profile-input" id="lastNameInput" disabled asp-for="@Model.User.LastName" />
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6">
-                <h4>Phone</h4>
-                <input class="profile-input" id="phoneInput" disabled asp-for="@Model.User.Phone" />
-            </div>
-
-            <div class="col-md-6">
-                <h4>Email</h4>
-                <input type="email" class="profile-input" id="emailInput" disabled asp-for="@Model.User.Email" />
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6">
-                <h4>Login</h4>
-                <input class="profile-input" id="loginInput" disabled asp-for="@Model.User.Login" />
-            </div>
-        </div>
-
-        <div class="d-flex mt-3">
-            <div>
-                <button type="button" id="editButton" class="btn btn-primary">Edit</button>
-            </div>
-            <div>
-                <button type="submit" id="saveButton" class="btn btn-primary collapse">Save</button>
-            </div>
-            <div>
-                <button type="button" id="cancelButton" class="btn btn-primary collapse">Cancel</button>
-            </div>
-        </div>
+<h1>Profile</h1>
+<form asp-action="EditDetails" method="post">
+    @Html.HiddenFor( x => x.User.Password)
+    <div class="form-group">
+        <p><em style="font-size: 20px;">Id: @Model.User.Id</em></p>
+    </div>
+    <div class="form-group">
+        <label asp-for="User.Login">Login</label>
+        <input asp-for="User.Login" class="form-control" />
+        <span asp-validation-for="User.Login" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="User.Email">Email</label>
+        <input asp-for="User.Email" class="form-control" />
+        <span asp-validation-for="User.Email" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="User.Phone">Phone</label>
+        <input asp-for="User.Phone" class="form-control" />
+        <span asp-validation-for="User.Phone" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="User.FirstName">First Name</label>
+        <input asp-for="User.FirstName" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="User.LastName">Last Name</label>
+        <input asp-for="User.LastName" class="form-control" />
+    </div>
+    <div class="from-group">
+        <button type="submit" class="btn btn-primary">Save</button>
+        
     </div>
 </form>
 
-<script>
-    var inputs = document.getElementsByClassName("profile-input");
-    var editButton = document.getElementById('editButton');
-    var saveButton = document.getElementById('saveButton');
-    var cancelButton = document.getElementById('cancelButton');
+<hr />
 
-    editButton.addEventListener('click', function () {
-        editButton.classList.add("collapse");
-        saveButton.classList.remove("collapse");
-        cancelButton.classList.remove("collapse");
+<h3>Change Password</h3>
+<form asp-action="ChangePassword" method="post">
+    <div class="form-group">
+        <label asp-for="Password">New Password</label>
+        <input type="password" asp-for="Password" class="form-control" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="ConfirmPassword">Confirm New Password</label>
+        <input type="password" asp-for="ConfirmPassword" class="form-control" />
+        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+    </div>
 
-        for(let input of inputs) {
-            input.disabled = false;
-        }
-    });
+    <button type="submit" class="btn btn-primary">Save</button>
+</form>
 
-    cancelButton.addEventListener('click', function() {
-        editButton.classList.remove("collapse");
-        saveButton.classList.add("collapse");
-        cancelButton.classList.add("collapse");
 
-        for(let input of inputs) {
-            input.disabled = true;
-        }
-    });
-</script>
+<a class="btn btn-danger" asp-action="Index">Clear</a>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

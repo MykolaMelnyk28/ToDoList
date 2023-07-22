@@ -5,7 +5,6 @@ using System.Security.Claims;
 using ToDoList.Shared.Entity;
 using ToDoList.DB;
 using Microsoft.AspNetCore.Mvc.Filters;
-using ToDoList.Shared.Helpers;
 using ToDoList.Models.Account;
 
 namespace ToDoList.Controllers
@@ -39,6 +38,8 @@ namespace ToDoList.Controllers
             {
                 return BadRequest();
             }
+
+            ModelState.Remove("User.Id");
 
             if(model.User.Password != model.ConfirmPassword)
             {
@@ -89,6 +90,9 @@ namespace ToDoList.Controllers
                 return BadRequest();
             }
 
+            ModelState.Remove("User.Id");
+            ModelState.Remove("User.Email");
+
             if(!ModelState.IsValid)
             {
                 return View(model);
@@ -131,6 +135,7 @@ namespace ToDoList.Controllers
             {
                 new Claim("Id", user.Id.ToString()),
                 new Claim("Login", user.Login),
+                new Claim("Password", user.Password),
                 new Claim("Email", user.Email),
                 new Claim("Phone", user.Phone),
                 new Claim("FirstName", user.FirstName),
