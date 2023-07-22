@@ -30,39 +30,174 @@ namespace ToDoList.Controllers
 
         public IActionResult Index()
         {
-            ClaimsPrincipal claims = HttpContext.User;
-            UserEntity user = new UserEntity
-            {
-                Id = int.Parse(claims.FindFirstValue("Id")),
-                Login = claims.FindFirstValue("Login"),
-                Password = claims.FindFirstValue("Password"),
-                Email = claims.FindFirstValue("Email"),
-                Phone = claims.FindFirstValue("Phone"),
-                FirstName = claims.FindFirstValue("FirstName"),
-                LastName = claims.FindFirstValue("LastName")
-            };
-
-            return View(new IndexModel { User = user });
+            UserEntity user = GetCurrentUserEntity();
+            var model = new IndexModel { User = user };
+            return View(model);
         }
 
         [HttpPost]
         public async Task<IActionResult> Index(IndexModel model)
         {
-            try
+            UserEntity foundUser = GetCurrentUserEntity();
+
+            if(!model.User.Equals(foundUser))
             {
-                _db.Users.Update(model.User);
-                await _db.SaveChangesAsync();
-                SetUser(model.User);
-            }
-            catch(Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while updating user in the database.");
-                return StatusCode(500);
+                if(model.User.Login != foundUser.Login && UserExists(model.User.Login))
+                {
+                    ModelState.AddModelError("User.Login", "User with this login already exists.");
+                }
+
+                if(model.User.Email != foundUser.Email && EmailExists(model.User.Email))
+                {
+                    ModelState.AddModelError("User.Email", "User with this email already exists.");
+                }
+
+                if(!string.IsNullOrWhiteSpace(model.User.Phone) && model.User.Phone != foundUser.Phone && PhoneExists(model.User.Phone))
+                {
+                    ModelState.AddModelError("User.Phone", "User with this phone number already exists.");
+                }
+
+                if(model.User.Password != foundUser.Password)
+                {
+                    if(!IsPasswordValid(model.User.Password))
+                    {
+                        ModelState.AddModelError("User.Password", "Invalid password format");
+                    }
+                }
+
+                if(!ModelState.IsValid)
+                {
+                    return View(model);
+                }
+
+                UpdateUser(foundUser, model.User);
+
+                try
+                {
+                    _db.Users.Update(foundUser);
+                    await _db.SaveChangesAsync();
+                }
+                catch(Exception ex)
+                {
+                    _logger.LogError(ex, "Error occurred while updating user in the database.");
+                    return StatusCode(500);
+                }
             }
 
             return RedirectToAction("Index");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(IndexModel model)
+        {
+            UserEntity foundUser = GetCurrentUserEntity();
+
+            ModelState.Remove("User");
+            if(model.Password != foundUser.Password)
+            {
+                if(!IsPasswordValid(model.Password))
+                {
+                    ModelState.AddModelError("User.Password", "Invalid password format");
+                }
+            }
+
+            if(!ModelState.IsValid)
+            {
+                return View("Index", model);
+            }
+
+            foundUser.Password = model.Password;
+            _db.Users.Update(foundUser);
+            await _db.SaveChangesAsync();
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditDetails(IndexModel model)
+        {
+            if(model == null || model.User == null)
+            {
+                BadRequest();
+            }
+
+            UserEntity foundUser = GetCurrentUserEntity();
+
+            if(model.User.Login != foundUser.Login && UserExists(model.User.Login))
+            {
+                ModelState.AddModelError("User.Login", "User with this login already exists.");
+            }
+
+            if(model.User.Email != foundUser.Email && EmailExists(model.User.Email))
+            {
+                ModelState.AddModelError("User.Email", "User with this email already exists.");
+            }
+
+            if(!string.IsNullOrWhiteSpace(model.User.Phone) && model.User.Phone != foundUser.Phone && PhoneExists(model.User.Phone))
+            {
+                ModelState.AddModelError("User.Phone", "User with this phone number already exists.");
+            }
+
+            ModelState.Remove("Password");
+            ModelState.Remove("ConfirmPassword");
+            if(!ModelState.IsValid)
+            {
+                return View("Index", model);
+            }
+
+            UpdateUser(foundUser, model.User);
+            _db.Users.Update(foundUser);
+            await _db.SaveChangesAsync();
+
+            return RedirectToAction("Index");
+        }
+
+        [NonAction]
+        private bool IsPasswordValid(string password)
+        {
+            return !string.IsNullOrWhiteSpace(password) && password.Length >= 8;
+        }
+
+        [NonAction]
+        private void UpdateUser(UserEntity _old, UserEntity _new)
+        {
+            if(!_old.Equals(_new))
+            {
+                _old.FirstName = _new.FirstName ?? "";
+                _old.LastName = _new.LastName ?? "";
+                _old.Login = _new.Login;
+                _old.Email = _new.Email;
+                _old.Phone = _new.Phone ?? "";
+            }
+        }
+
+        [NonAction]
+        private UserEntity GetCurrentUserEntity()
+        {
+            ClaimsPrincipal claims = HttpContext.User;
+            UserEntity user = _db.Users.FirstOrDefault(x => x.Id == int.Parse(claims.FindFirstValue("Id")));
+            return user;
+        }
+
+        [NonAction]
+        private bool PhoneExists(string phone)
+        {
+            return _db.Users.Count(x => x.Phone == phone) > 0;
+        }
+
+        [NonAction]
+        private bool UserExists(string login)
+        {
+            return _db.Users.Count(x => x.Login == login) > 0;
+        }
+
+        [NonAction]
+        private bool EmailExists(string email)
+        {
+            return _db.Users.Count(x => x.Email == email) > 0;
+        }
+
+        [NonAction]
         private async Task SetUser(UserEntity user)
         {
 			List<Claim> claims = new List<Claim>
@@ -76,7 +211,7 @@ namespace ToDoList.Controllers
 				new Claim("LastName", user.LastName)
 			};
 
-			ClaimsIdentity identity = new ClaimsIdentity(claims, "ApplicationCookie");
+			ClaimsIdentity identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 			ClaimsPrincipal principal = new ClaimsPrincipal(identity);
 
 			await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using System.Security.Claims;
 using ToDoList.DB;
 using ToDoList.Models;
 using ToDoList.Models.Home;
@@ -28,14 +29,30 @@ namespace ToDoList.Controllers
 
         public async Task<IActionResult> Index()
         {
-            List<TaskEntity> tasks = _db.Tasks.Include(x => x.State).Include(x => x.Priority).ToList();
+			List<TaskEntity> tasks = new List<TaskEntity>();
+			if(User.Identity.IsAuthenticated)
+			{
+                tasks = _db.Tasks
+					.Where(x => x.UserId == GetCurrentUserEntity().Id)
+                    .Include(x => x.State)
+					.Include(x => x.Priority)
+					.ToList();
+            }
+            
             return View(new IndexViewModel { Tasks = tasks });
         }
 
-		[HttpPost]
+        [NonAction]
+        private UserEntity GetCurrentUserEntity()
+        {
+            ClaimsPrincipal claims = HttpContext.User;
+            return _db.Users.FirstOrDefault(x => x.Id == int.Parse(claims.FindFirstValue("Id")));
+        }
+
+        [HttpPost]
 		public async Task<IActionResult> Sort(IndexViewModel model)
 		{
-			IQueryable<TaskEntity> query = _db.Tasks;
+			IQueryable<TaskEntity> query = _db.Tasks.Where(x => x.UserId == GetCurrentUserEntity().Id);
 
 			switch(model.SortBy)
 			{
@@ -60,7 +77,10 @@ namespace ToDoList.Controllers
 		[HttpPost]
 		public IActionResult Search(IndexViewModel model)
 		{
-			IQueryable<TaskEntity> query = _db.Tasks.Include(x => x.State).Include(x => x.Priority);
+			IQueryable<TaskEntity> query = _db.Tasks
+				.Where(x => x.UserId == GetCurrentUserEntity().Id)
+				.Include(x => x.State)
+				.Include(x => x.Priority);
 
 			if (!string.IsNullOrWhiteSpace(model.SearchValue))
 			{
