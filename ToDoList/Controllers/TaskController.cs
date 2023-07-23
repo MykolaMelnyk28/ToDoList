@@ -45,6 +45,11 @@ namespace ToDoList.Controllers
                 return BadRequest();
             }
 
+            if(!ModelState.IsValid)
+            {
+                return View("Create");
+            }
+
             try
             {
                 if(!_db.Tasks.Contains(task))
@@ -64,6 +69,11 @@ namespace ToDoList.Controllers
 
         public IActionResult Edit(int? id)
         {
+            if(id == null)
+            {
+                return BadRequest();
+            }
+
             TaskEntity? task = _db.Tasks.FirstOrDefault(x => x.Id == id);
 
             if(task == null)
@@ -77,6 +87,16 @@ namespace ToDoList.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(TaskEntity task)
         {
+            if(task == null)
+            {
+                return BadRequest();
+            }
+
+            if(!ModelState.IsValid)
+            {
+                return View("Create");
+            }
+
             try
             {
                 TaskEntity? existingTask = await _db.Tasks.FirstOrDefaultAsync(x => x.Id == task.Id);
