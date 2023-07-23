@@ -7,7 +7,7 @@ namespace ToDoList.Shared.Entity
 		[Key]
 		public int Id { get; set; }
 
-		[Required]
+		[Required(ErrorMessage = "Enter name")]
 		public string Name { get; set; }
 		public string Content { get; set; } = string.Empty;
 		public int? PriorityId { get; set; }

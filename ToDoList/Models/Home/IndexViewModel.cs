@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ToDoList.Shared.Entity;
+﻿using ToDoList.Shared.Entity;
 
 namespace ToDoList.Models.Home
 {

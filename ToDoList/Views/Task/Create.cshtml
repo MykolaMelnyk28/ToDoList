@@ -9,7 +9,7 @@
     <div class="container">
         <div class="form-group">
             <label asp-for="@Model.Task.Name">Name</label>
-            <input type="text" asp-for="@Model.Task.Name" class="form-control" />
+            <input type="text" asp-for="@Model.Task.Name" class="form-control" required />
             <span asp-validation-for="@Model.Task.Name" class="text-danger" />
         </div>
         <div class="form-group">
