@@ -3,7 +3,8 @@
 }
 @model IndexModel
 
-<h1>Profile</h1>
+<h1 class="text-center">@ViewData["Title"]</h1>
+
 <form asp-action="EditDetails" method="post">
     @Html.HiddenFor( x => x.User.Password)
     <div class="form-group">
@@ -27,10 +28,12 @@
     <div class="form-group">
         <label asp-for="User.FirstName">First Name</label>
         <input asp-for="User.FirstName" class="form-control" />
+        <span asp-validation-for="User.FirstName" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="User.LastName">Last Name</label>
         <input asp-for="User.LastName" class="form-control" />
+        <span asp-validation-for="User.LastName" class="text-danger"></span>
     </div>
     <div class="from-group">
         <button type="submit" class="btn btn-primary">Save</button>
@@ -56,8 +59,13 @@
     <button type="submit" class="btn btn-primary">Save</button>
 </form>
 
+<div class="d-flex justify-content-between">
+    <a class="btn btn-danger" asp-action="Index">Clear</a>
+    <form asp-controller="Account" asp-action="Delete" asp-route-id="@Model.User.Id">
+        <button class="btn btn-danger">Delete account</button>
+    </form>
+</div>
 
-<a class="btn btn-danger" asp-action="Index">Clear</a>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

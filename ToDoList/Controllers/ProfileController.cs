@@ -10,7 +10,7 @@ using ToDoList.Shared.Entity;
 
 namespace ToDoList.Controllers
 {
-	[Authorize]
+    [Authorize]
     public class ProfileController : Controller
     {
         private readonly ILogger<ProfileController> _logger;
@@ -33,58 +33,6 @@ namespace ToDoList.Controllers
             UserEntity user = GetCurrentUserEntity();
             var model = new IndexModel { User = user };
             return View(model);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Index(IndexModel model)
-        {
-            UserEntity foundUser = GetCurrentUserEntity();
-
-            if(!model.User.Equals(foundUser))
-            {
-                if(model.User.Login != foundUser.Login && UserExists(model.User.Login))
-                {
-                    ModelState.AddModelError("User.Login", "User with this login already exists.");
-                }
-
-                if(model.User.Email != foundUser.Email && EmailExists(model.User.Email))
-                {
-                    ModelState.AddModelError("User.Email", "User with this email already exists.");
-                }
-
-                if(!string.IsNullOrWhiteSpace(model.User.Phone) && model.User.Phone != foundUser.Phone && PhoneExists(model.User.Phone))
-                {
-                    ModelState.AddModelError("User.Phone", "User with this phone number already exists.");
-                }
-
-                if(model.User.Password != foundUser.Password)
-                {
-                    if(!IsPasswordValid(model.User.Password))
-                    {
-                        ModelState.AddModelError("User.Password", "Invalid password format");
-                    }
-                }
-
-                if(!ModelState.IsValid)
-                {
-                    return View(model);
-                }
-
-                UpdateUser(foundUser, model.User);
-
-                try
-                {
-                    _db.Users.Update(foundUser);
-                    await _db.SaveChangesAsync();
-                }
-                catch(Exception ex)
-                {
-                    _logger.LogError(ex, "Error occurred while updating user in the database.");
-                    return StatusCode(500);
-                }
-            }
-
-            return RedirectToAction("Index");
         }
 
         [HttpPost]

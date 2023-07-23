@@ -79,7 +79,7 @@ namespace ToDoList.Controllers
         {
             try
             {
-                var existingTask = await _db.Tasks.FindAsync(task.Id);
+                TaskEntity? existingTask = await _db.Tasks.FirstOrDefaultAsync(x => x.Id == task.Id);
 
                 if(existingTask == null)
                 {
