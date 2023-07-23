@@ -15,17 +15,17 @@ namespace ToDoList.Shared.Entity
 		[StringLength(24, MinimumLength = 6)]
 		public string Login { get; set; }
 
-		[RegularExpression("^\\w{0,24}$", ErrorMessage = "Invalid value")]
+		[RegularExpression("^[A-Za-zА-Яа-яІіЇїЄєЧч]{0,24}$", ErrorMessage = "Invalid value")]
 		public string? FirstName { get; set; }
 
-		[RegularExpression("^\\w{0,24}$", ErrorMessage = "Invalid value")]
+		[RegularExpression("^[A-Za-zА-Яа-яІіЇїЄєЧч]{0,24}$", ErrorMessage = "Invalid value")]
 		public string? LastName { get; set; }
 
 		[Required(ErrorMessage = "Enter login")]
         [EmailAddress(ErrorMessage = "Invalid email address")]
 		public string Email { get; set; }
 
-		[Phone(ErrorMessage = "Invalid phone address")]
+		[RegularExpression("^(\\+\\d{1,3})?(\\d{10})$", ErrorMessage = "Invalid value")]
 		public string? Phone { get; set; }
 
 		[Required(ErrorMessage = "Enter password")]
@@ -39,13 +39,12 @@ namespace ToDoList.Shared.Entity
         {
             if(this == obj)
                 return true;
-            else if(obj == null)
-                return false;
-            else if(GetHashCode() != obj.GetHashCode())
+            else if(obj == null || obj is not UserEntity || GetHashCode() != obj.GetHashCode())
                 return false;
 
-            return obj is UserEntity entity &&
-                   Id == entity.Id &&
+            UserEntity entity = obj as UserEntity;
+
+            return Id == entity.Id &&
                    Login == entity.Login &&
                    FirstName == entity.FirstName &&
                    LastName == entity.LastName &&

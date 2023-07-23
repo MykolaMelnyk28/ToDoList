@@ -116,6 +116,25 @@ namespace ToDoList.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return BadRequest();
+            }
+
+            UserEntity? foundUser = _db.Users.FirstOrDefault(x => x.Id == id);
+            if (foundUser == null)
+            {
+                return NotFound();
+            }
+
+            _db.Users.Remove(foundUser);
+            await _db.SaveChangesAsync();
+
+            return await Logout();
+        }
+
         [NonAction]
         private bool UserExists(string login)
         {
