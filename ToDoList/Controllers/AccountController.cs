@@ -1,23 +1,23 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using ToDoList.Shared.Entity;
-using ToDoList.DB;
 using Microsoft.AspNetCore.Mvc.Filters;
+using System.Security.Claims;
 using ToDoList.Models.Account;
+using ToDoList.Shared.Entity;
 
 namespace ToDoList.Controllers
 {
     public class AccountController : Controller
     {
         private readonly ILogger<AccountController> _logger;
-        private readonly ApplicationContext _db;
+        private readonly UserManager<UserEntity> _userManager;
 
-        public AccountController(ILogger<AccountController> logger, ApplicationContext context)
+        public AccountController(ILogger<AccountController> logger, UserManager<UserEntity> userManager)
         {
             _logger = logger;
-            _db = context;
+            _userManager = userManager;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -32,6 +32,7 @@ namespace ToDoList.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SignUp(SignUpModel model)
         {
             if (model == null || model.User == null || model.ConfirmPassword == null)
@@ -41,19 +42,25 @@ namespace ToDoList.Controllers
 
             ModelState.Remove("User.Id");
 
-            if(model.User.Password != model.ConfirmPassword)
+            if(UserExists(model.User.UserName))
             {
-                ModelState.AddModelError("ConfirmPassword", "Паролі не співпадають.");
-            }
-
-            if(UserExists(model.User.Login))
-            {
-                ModelState.AddModelError("User.Login", "Користувач з таким логіном вже існує.");
+                ModelState.AddModelError("User.UserName", "The user with this login already exists.");
             }
 
             if(EmailExists(model.User.Email))
             {
-                ModelState.AddModelError("User.Email", "Користувач з такою електронною адресою вже існує.");
+                ModelState.AddModelError("User.Email", "The user with this email already exists.");
+            }
+
+            bool isValidPassword = await ValidatePassword(model.User, model.User.PasswordHash);
+            if(!isValidPassword)
+            {
+                ModelState.AddModelError("User.PasswordHash", "Invalid password format.");
+            }
+
+            if(model.User.PasswordHash != model.ConfirmPassword)
+            {
+                ModelState.AddModelError("ConfirmPassword", "Passwords do not match.");
             }
 
             if(!ModelState.IsValid)
@@ -61,29 +68,29 @@ namespace ToDoList.Controllers
                 return View(model);
             }
 
-            try
-            {
-                await _db.Users.AddAsync(model.User);
-                await _db.SaveChangesAsync();
-            }
-            catch(Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while saving user to the database.");
-                return StatusCode(500);
-            }
+            model.User.PasswordHash = _userManager.PasswordHasher.HashPassword(model.User, model.User.PasswordHash);
 
-            await SignInUser(model.User);
+            var result = await _userManager.CreateAsync(model.User);
 
-            return RedirectToAction("Index", "Home");
+            if(result.Succeeded)
+            {
+                await SignInUser(model.User);
+                return RedirectToAction("Index", "Home");
+            }
+            else
+            {
+                return View(model);
+            }
         }
 
         public IActionResult SignIn()
         {
-            return View(new SignInModel { User = new UserEntity { Login = "", Email = "", Password = ""} });
+            return View(new SignInModel { User = new UserEntity { UserName = "", Email = "", PasswordHash = ""} });
         }
 
         [HttpPost]
-        public IActionResult SignIn(SignInModel model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SignIn(SignInModel model)
         {
             if(model == null || model.User == null)
             {
@@ -98,24 +105,38 @@ namespace ToDoList.Controllers
                 return View(model);
             }
 
-            UserEntity foundUser = _db.Users.FirstOrDefault(x => x.Login == model.User.Login);
-            if(foundUser == null || foundUser.Password != model.User.Password)
+            model.User.PasswordHash = _userManager.PasswordHasher.HashPassword(model.User, model.User.PasswordHash);
+
+            UserEntity? foundUser = await _userManager.FindByNameAsync(model.User.UserName);
+
+            if(foundUser == null)
             {
-                ModelState.AddModelError(string.Empty, "Невірний логін або пароль");
+                ModelState.AddModelError(string.Empty, "User not found");
+                return View();
+            } 
+
+            var result = _userManager.PasswordHasher.VerifyHashedPassword(foundUser, foundUser.PasswordHash, model.User.PasswordHash);
+            if(result == PasswordVerificationResult.Success)
+            {
+                ModelState.AddModelError(string.Empty, "Wrong password");
                 return View();
             }
 
-            SignInUser(foundUser);
+            await SignInUser(foundUser);
 
             return RedirectToAction("Index", "Home");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -123,42 +144,47 @@ namespace ToDoList.Controllers
                 return BadRequest();
             }
 
-            UserEntity? foundUser = _db.Users.FirstOrDefault(x => x.Id == id);
+            UserEntity? foundUser = await _userManager.FindByIdAsync(id?.ToString());
             if (foundUser == null)
             {
                 return NotFound();
             }
 
-            _db.Users.Remove(foundUser);
-            await _db.SaveChangesAsync();
+            await _userManager.DeleteAsync(foundUser);
 
             return await Logout();
         }
 
         [NonAction]
+        private async Task<bool> ValidatePassword(UserEntity user, string password)
+        {
+            var result = await _userManager.PasswordValidators[0].ValidateAsync(_userManager, user, password);
+            return result.Succeeded;
+        }
+
+        [NonAction]
         private bool UserExists(string login)
         {
-            return _db.Users.Count(x => x.Login == login) > 0;
+            return _userManager.Users.Any(x => x.UserName == login);
         }
 
         [NonAction]
         private bool EmailExists(string email)
         {
-            return _db.Users.Count(x => x.Email == email) > 0;
+            return _userManager.Users.Any(x => x.Email == email);
         }
 
         [NonAction]
         private async Task SignInUser(UserEntity user)
         {
-            List<Claim> claims = new List<Claim>
+            List<Claim> claims = new List<Claim>()
             {
-                new Claim("Id", user.Id.ToString()),
-                new Claim("Login", user.Login),
-                new Claim("Password", user.Password),
-                new Claim("Email", user.Email),
-                new Claim("Phone", user.Phone),
-                new Claim("FirstName", user.FirstName),
-                new Claim("LastName", user.LastName)
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.UserName??""),
+                new Claim(ClaimTypes.Email, user.Email?? ""),
+                new Claim(ClaimTypes.MobilePhone, user.PhoneNumber??""),
+                new Claim("FirstName", user.FirstName??""),
+                new Claim("LastName", user.LastName??"")
             };
 
             ClaimsIdentity identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ToDoList.DB;
 using ToDoList.Servicies;
-
-WebApplication.Create();
+using ToDoList.Shared.Entity;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -17,6 +17,17 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 	options.AccessDeniedPath = "/Home/Error";
 });
 builder.Services.AddAuthorization();
+
+builder.Services.AddIdentityCore<UserEntity>(options =>
+{
+	options.User.RequireUniqueEmail = true;
+
+	options.Password.RequiredLength = 8;
+	options.Password.RequireDigit = true;
+	options.Password.RequireNonAlphanumeric = true;
+})
+	.AddEntityFrameworkStores<ApplicationContext>()
+	.AddDefaultTokenProviders();
 
 builder.Services.AddTransient<TaskManager>();
 

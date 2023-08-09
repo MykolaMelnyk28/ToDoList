@@ -45,17 +45,6 @@ namespace ToDoList.DB
 				x.HasOne(x => x.User).WithMany(x => x.Tasks).HasForeignKey(f => f.UserId);
                 x.HasIndex(x => new { x.Name, x.UserId }).IsUnique();
             });
-
-			modelBuilder.Entity<UserEntity>(x =>
-			{
-				x.ToTable("Users");
-				x.HasKey(k => k.Id);
-				x.Property(x => x.FirstName).HasDefaultValue(string.Empty);
-				x.Property(x => x.LastName).HasDefaultValue(string.Empty);
-				x.Property(x => x.Phone).HasDefaultValue(string.Empty);
-				x.HasIndex(x => x.Login).IsUnique();
-				x.HasIndex(x => x.Email).IsUnique();
-			});
 		}
 	}
 }

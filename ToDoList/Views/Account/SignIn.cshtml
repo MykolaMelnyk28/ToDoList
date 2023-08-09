@@ -9,14 +9,14 @@
         @Html.HiddenFor(x => x.User.Id)
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         <div class="form-group">
-            <label asp-for="User.Login">Login</label>
-            <input type="text" asp-for="User.Login" class="form-control" required />
-            <span asp-validation-for="User.Login" class="text-danger"/>
+            <label asp-for="User.UserName">Login</label>
+            <input type="text" asp-for="User.UserName" class="form-control" required />
+            <span asp-validation-for="User.UserName" class="text-danger" />
         </div>
         <div class="form-group">
-            <label asp-for="User.Password">Password</label>
-            <input type="password" asp-for="User.Password" class="form-control" required />
-            <span asp-validation-for="User.Password" class="text-danger"/>
+            <label asp-for="User.PasswordHash">Password</label>
+            <input type="password" asp-for="User.PasswordHash" class="form-control" required />
+            <span asp-validation-for="User.PasswordHash" class="text-danger" />
         </div>
         <button type="submit" class="btn btn-primary mt-3">Send</button>
     </form>

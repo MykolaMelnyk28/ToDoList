@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Security.Claims;
@@ -14,12 +15,12 @@ namespace ToDoList.Controllers
     public class ProfileController : Controller
     {
         private readonly ILogger<ProfileController> _logger;
-        private readonly ApplicationContext _db;
+        private readonly UserManager<UserEntity> _userManager;
 
-        public ProfileController(ILogger<ProfileController> logger, ApplicationContext context)
+        public ProfileController(ILogger<ProfileController> logger, UserManager<UserEntity> userManager)
         {
             _logger = logger;
-            _db = context;
+            _userManager = userManager;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -28,9 +29,9 @@ namespace ToDoList.Controllers
             ViewBag.IsAuthenticated = User.Identity.IsAuthenticated;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            UserEntity user = GetCurrentUserEntity();
+            UserEntity user = await GetCurrentUserEntity();
             var model = new IndexModel { User = user };
             return View(model);
         }
@@ -38,10 +39,10 @@ namespace ToDoList.Controllers
         [HttpPost]
         public async Task<IActionResult> ChangePassword(IndexModel model)
         {
-            UserEntity foundUser = GetCurrentUserEntity();
+            UserEntity foundUser = await GetCurrentUserEntity();
 
             ModelState.Remove("User");
-            if(model.Password != foundUser.Password)
+            if(model.Password != foundUser.PasswordHash)
             {
                 if(!IsPasswordValid(model.Password))
                 {
@@ -54,9 +55,9 @@ namespace ToDoList.Controllers
                 return View("Index", model);
             }
 
-            foundUser.Password = model.Password;
-            _db.Users.Update(foundUser);
-            await _db.SaveChangesAsync();
+            foundUser.PasswordHash = _userManager.PasswordHasher.HashPassword(foundUser, model.Password);
+
+            await _userManager.UpdateAsync(foundUser);
 
             return RedirectToAction("Index");
         }
@@ -69,11 +70,11 @@ namespace ToDoList.Controllers
                 BadRequest();
             }
 
-            UserEntity foundUser = GetCurrentUserEntity();
+            UserEntity foundUser = await GetCurrentUserEntity();
 
-            if(model.User.Login != foundUser.Login && UserExists(model.User.Login))
+            if(model.User.UserName != foundUser.UserName && UserExists(model.User.UserName))
             {
-                ModelState.AddModelError("User.Login", "User with this login already exists.");
+                ModelState.AddModelError("User.UserName", "User with this login already exists.");
             }
 
             if(model.User.Email != foundUser.Email && EmailExists(model.User.Email))
@@ -81,9 +82,9 @@ namespace ToDoList.Controllers
                 ModelState.AddModelError("User.Email", "User with this email already exists.");
             }
 
-            if(!string.IsNullOrWhiteSpace(model.User.Phone) && model.User.Phone != foundUser.Phone && PhoneExists(model.User.Phone))
+            if(!string.IsNullOrWhiteSpace(model.User.PhoneNumber) && model.User.PhoneNumber != foundUser.PhoneNumber && PhoneExists(model.User.PhoneNumber))
             {
-                ModelState.AddModelError("User.Phone", "User with this phone number already exists.");
+                ModelState.AddModelError("User.PhoneNumber", "User with this phone number already exists.");
             }
 
             ModelState.Remove("Password");
@@ -94,8 +95,7 @@ namespace ToDoList.Controllers
             }
 
             UpdateUser(foundUser, model.User);
-            _db.Users.Update(foundUser);
-            await _db.SaveChangesAsync();
+            await _userManager.UpdateAsync(foundUser);
 
             return RedirectToAction("Index");
         }
@@ -113,53 +113,53 @@ namespace ToDoList.Controllers
             {
                 _old.FirstName = _new.FirstName ?? "";
                 _old.LastName = _new.LastName ?? "";
-                _old.Login = _new.Login;
+                _old.UserName = _new.UserName;
                 _old.Email = _new.Email;
-                _old.Phone = _new.Phone ?? "";
+                _old.PhoneNumber = _new.PhoneNumber ?? "";
             }
         }
 
         [NonAction]
-        private UserEntity GetCurrentUserEntity()
+        private async Task<UserEntity> GetCurrentUserEntity()
         {
-            ClaimsPrincipal claims = HttpContext.User;
-            UserEntity user = _db.Users.FirstOrDefault(x => x.Id == int.Parse(claims.FindFirstValue("Id")));
+            UserEntity? user = await _userManager.GetUserAsync(HttpContext.User);
             return user;
         }
 
         [NonAction]
         private bool PhoneExists(string phone)
         {
-            return _db.Users.Count(x => x.Phone == phone) > 0;
+            return _userManager.Users.Any(x => x.PhoneNumber == phone);
         }
 
         [NonAction]
         private bool UserExists(string login)
         {
-            return _db.Users.Count(x => x.Login == login) > 0;
+            return _userManager.Users.Any(x => x.UserName == login);
         }
+
 
         [NonAction]
         private bool EmailExists(string email)
         {
-            return _db.Users.Count(x => x.Email == email) > 0;
+            return _userManager.Users.Any(x => x.Email == email);
         }
 
         [NonAction]
         private async Task SetUser(UserEntity user)
         {
-			List<Claim> claims = new List<Claim>
-			{
-				new Claim("Id", user.Id.ToString()),
-				new Claim("Login", user.Login),
-				new Claim("Password", user.Password),
-				new Claim("Email", user.Email),
-				new Claim("Phone", user.Phone),
-				new Claim("FirstName", user.FirstName),
-				new Claim("LastName", user.LastName)
-			};
+            List<Claim> claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.UserName ?? ""),
+                new Claim(ClaimTypes.Email, user.Email ?? ""),
+                new Claim(ClaimTypes.MobilePhone, user.PhoneNumber ?? ""),
+                new Claim("FirstName", user.FirstName ?? ""),
+                new Claim("LastName", user.LastName ?? "")
+            };
 
-			ClaimsIdentity identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            ClaimsIdentity identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 			ClaimsPrincipal principal = new ClaimsPrincipal(identity);
 
 			await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);

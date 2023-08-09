@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using ToDoList.DB;
 using ToDoList.Models.Home;
 using ToDoList.Servicies;
 using ToDoList.Shared.Entity;
@@ -12,14 +10,14 @@ namespace ToDoList.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly ApplicationContext _db;
         private readonly TaskManager _taskManager;
+        private readonly UserManager<UserEntity> _userManager;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationContext context, TaskManager taskManager)
+        public HomeController(ILogger<HomeController> logger, TaskManager taskManager, UserManager<UserEntity> userManager)
         {
             _logger = logger;
-            _db = context;
             _taskManager = taskManager;
+            _userManager = userManager;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -46,10 +44,10 @@ namespace ToDoList.Controllers
 		}
 
         [NonAction]
-        private UserEntity GetCurrentUserEntity()
+        private async Task<UserEntity> GetCurrentUserEntity()
         {
-            ClaimsPrincipal claims = HttpContext.User;
-            return _db.Users.FirstOrDefault(x => x.Id == int.Parse(claims.FindFirstValue("Id")));
+            UserEntity? user = await _userManager.GetUserAsync(HttpContext.User);
+            return user;
         }
 
         [NonAction]
@@ -58,8 +56,8 @@ namespace ToDoList.Controllers
             List<TaskEntity> tasks = new List<TaskEntity>();
             if(User.Identity.IsAuthenticated)
             {
-                UserEntity user = GetCurrentUserEntity();
-                tasks = _taskManager.GetTasks(x => x.UserId == user.Id).ToList();
+                UserEntity user = await GetCurrentUserEntity();
+                tasks.AddRange(_taskManager.GetTasks(x => x.UserId == user.Id));
             }
             return tasks;
         }

@@ -28,7 +28,9 @@
                 @if ((bool)ViewBag.IsAuthenticated)
                 {
                     <a class="btn" asp-controller="Profile" asp-action="Index">Profile</a>
-                    <a class="btn" asp-controller="Account" asp-action="Logout">Sign Out</a>
+                    <form asp-controller="Account" asp-action="Logout" method="post">
+                        <button class="btn" type="submit">Sign Out</button>
+                    </form>
                 }
                 else
                 {

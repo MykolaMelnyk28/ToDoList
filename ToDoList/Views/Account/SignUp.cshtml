@@ -18,11 +18,11 @@
         <span asp-validation-for="User.LastName" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="User.Login">
+        <label asp-for="User.UserName">
             Login<span style="color: red;">*</span>
         </label>
-        <input type="text" asp-for="User.Login" class="form-control" required />
-        <span asp-validation-for="User.Login" class="text-danger"></span>
+        <input type="text" asp-for="User.UserName" class="form-control" required />
+        <span asp-validation-for="User.UserName" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="User.Email">
@@ -32,16 +32,16 @@
         <span asp-validation-for="User.Email" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="User.Phone">Phone</label>
-        <input type="text" asp-for="User.Phone" class="form-control" />
-        <span asp-validation-for="User.Phone" class="text-danger"></span>
+        <label asp-for="User.PhoneNumber">Phone</label>
+        <input type="text" asp-for="User.PhoneNumber" class="form-control" />
+        <span asp-validation-for="User.PhoneNumber" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="User.Password">
+        <label asp-for="User.PasswordHash">
             Password<span style="color: red;">*</span>
         </label>
-        <input type="password" asp-for="User.Password" class="form-control" required />
-        <span asp-validation-for="User.Password" class="text-danger"></span>
+        <input type="password" asp-for="User.PasswordHash" class="form-control" required />
+        <span asp-validation-for="User.PasswordHash" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="ConfirmPassword">
