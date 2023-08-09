@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using ToDoList.DB;
+using ToDoList.Servicies;
 
 WebApplication.Create();
 
@@ -17,6 +18,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 });
 builder.Services.AddAuthorization();
 
+builder.Services.AddTransient<TaskManager>();
 
 var app = builder.Build();
 
