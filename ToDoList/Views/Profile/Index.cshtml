@@ -6,14 +6,14 @@
 <h1 class="text-center">@ViewData["Title"]</h1>
 
 <form asp-action="EditDetails" method="post">
-    @Html.HiddenFor( x => x.User.Password)
+    @Html.HiddenFor( x => x.User.PasswordHash)
     <div class="form-group">
         <p><em style="font-size: 20px;">Id: @Model.User.Id</em></p>
     </div>
     <div class="form-group">
-        <label asp-for="User.Login">Login</label>
-        <input asp-for="User.Login" class="form-control" />
-        <span asp-validation-for="User.Login" class="text-danger"></span>
+        <label asp-for="User.UserName">Login</label>
+        <input asp-for="User.UserName" class="form-control" />
+        <span asp-validation-for="User.UserName" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="User.Email">Email</label>
@@ -21,9 +21,9 @@
         <span asp-validation-for="User.Email" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="User.Phone">Phone</label>
-        <input asp-for="User.Phone" class="form-control" />
-        <span asp-validation-for="User.Phone" class="text-danger"></span>
+        <label asp-for="User.PhoneNumber">Phone</label>
+        <input asp-for="User.PhoneNumber" class="form-control" />
+        <span asp-validation-for="User.PhoneNumber" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="User.FirstName">First Name</label>

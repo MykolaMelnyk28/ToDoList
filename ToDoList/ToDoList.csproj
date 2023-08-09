@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ToDoList.DB\ToDoList.DB.csproj" />
     <ProjectReference Include="..\ToDoList.Shared\ToDoList.Shared.csproj" />
   </ItemGroup>

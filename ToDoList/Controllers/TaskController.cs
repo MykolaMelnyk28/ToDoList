@@ -31,7 +31,7 @@ namespace ToDoList.Controllers
 
         public IActionResult Create()
 		{
-            int currentUserId = int.Parse(HttpContext.User.FindFirstValue("Id"));
+            int currentUserId = int.Parse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
             return View(new CreateModel { Task = new TaskEntity { 
 				StateId = StateEntityHelper.DefaultStates[0].Id,
 				UserId = currentUserId
