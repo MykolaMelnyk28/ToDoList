@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using ToDoList.DB;
 using ToDoList.Models.Task;
+using ToDoList.Servicies;
 using ToDoList.Shared.Entity;
 using ToDoList.Shared.Helpers;
 
@@ -14,12 +15,12 @@ namespace ToDoList.Controllers
 	public class TaskController : Controller
 	{
         private readonly ILogger<TaskController> _logger;
-        private readonly ApplicationContext _db;
+        private readonly TaskManager _taskManager;
 
-        public TaskController(ILogger<TaskController> logger, ApplicationContext context)
+        public TaskController(ILogger<TaskController> logger, TaskManager taskManager)
         {
             _logger = logger;
-            _db = context;
+            _taskManager = taskManager;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -50,21 +51,8 @@ namespace ToDoList.Controllers
                 return View("Create");
             }
 
-            try
-            {
-                if(!_db.Tasks.Contains(task))
-                {
-                    await _db.Tasks.AddAsync(task);
-                    await _db.SaveChangesAsync();
-                }
-            }
-            catch(Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while creating a task.");
-                return StatusCode(500);
-            }
-
-            return RedirectToAction("Index", "Home");
+            bool result = await _taskManager.CreateTaskAsync(task);
+            return (result) ? RedirectToAction("Index", "Home") : View("Create");
         }
 
         public IActionResult Edit(int? id)
@@ -74,7 +62,7 @@ namespace ToDoList.Controllers
                 return BadRequest();
             }
 
-            TaskEntity? task = _db.Tasks.FirstOrDefault(x => x.Id == id);
+            TaskEntity? task = _taskManager.FirstOrDefalut(x => x.Id == id.Value);
 
             if(task == null)
             {
@@ -97,46 +85,14 @@ namespace ToDoList.Controllers
                 return View("Create");
             }
 
-            try
-            {
-                TaskEntity? existingTask = await _db.Tasks.FirstOrDefaultAsync(x => x.Id == task.Id);
-
-                if(existingTask == null)
-                {
-                    return NotFound();
-                }
-
-                _db.Entry(existingTask).CurrentValues.SetValues(task);
-                await _db.SaveChangesAsync();
-            }
-            catch(DbUpdateConcurrencyException ex)
-            {
-                _logger.LogError(ex, "Concurrency error occurred while editing a task.");
-                return RedirectToAction("ConcurrencyError");
-            }
-            catch(Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while editing a task.");
-                return StatusCode(500);
-            }
-
-            return RedirectToAction("Index", "Home");
+            bool result = await _taskManager.UpdateTaskAsync(task);
+            return (result) ? RedirectToAction("Index", "Home") : View("Create");
         }
 
         [HttpPost]
         public async Task<IActionResult> Delete(int? id)
         {
-            try
-            {
-                _db.Tasks.Remove(new TaskEntity { Id = id.Value });
-                await _db.SaveChangesAsync();
-            }
-            catch(Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while deleting a task.");
-                return StatusCode(500);
-            }
-
+            await _taskManager.DeleteTaskByIdAsync(id.Value);
             return RedirectToAction("Index", "Home");
         }
     }

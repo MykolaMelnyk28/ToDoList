@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using ToDoList.DB;
 using ToDoList.Models.Home;
+using ToDoList.Servicies;
 using ToDoList.Shared.Entity;
 
 namespace ToDoList.Controllers
@@ -12,11 +13,13 @@ namespace ToDoList.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationContext _db;
+        private readonly TaskManager _taskManager;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationContext context)
+        public HomeController(ILogger<HomeController> logger, ApplicationContext context, TaskManager taskManager)
         {
             _logger = logger;
             _db = context;
+            _taskManager = taskManager;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -55,11 +58,8 @@ namespace ToDoList.Controllers
             List<TaskEntity> tasks = new List<TaskEntity>();
             if(User.Identity.IsAuthenticated)
             {
-                tasks = await _db.Tasks
-                    .Where(x => x.UserId == GetCurrentUserEntity().Id)
-                    .Include(x => x.State)
-                    .Include(x => x.Priority)
-                    .ToListAsync();
+                UserEntity user = GetCurrentUserEntity();
+                tasks = _taskManager.GetTasks(x => x.UserId == user.Id).ToList();
             }
             return tasks;
         }
