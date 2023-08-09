@@ -20,7 +20,7 @@
         <div class="form-group">
             <label asp-for="@Model.Task.PriorityId">Priority</label>
             <select asp-for="@Model.Task.PriorityId" class="form-control">
-                @foreach (var p in Model.Priorities)
+                @foreach (var p in PriorityEntityHelper.DefaultPriorities)
                 {
                     <option value="@p.Id">@p.Name</option>
                 }

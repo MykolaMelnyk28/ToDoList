@@ -40,6 +40,7 @@ namespace ToDoList.DB
 				x.ToTable("Tasks");
 				x.HasKey(k => k.Id);
 				x.Property(x => x.Name).HasMaxLength(255);
+				x.Property(x => x.Content).HasDefaultValue(string.Empty);
 				x.HasOne(x => x.State).WithMany(x => x.Tasks).HasForeignKey(f => f.StateId);
 				x.HasOne(x => x.Priority).WithMany(x => x.Tasks).HasForeignKey(f => f.PriorityId);
 				x.HasOne(x => x.User).WithMany(x => x.Tasks).HasForeignKey(f => f.UserId);
