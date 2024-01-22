@@ -51,13 +51,13 @@ namespace ToDoList.Models.Home
                 switch(SearchBy)
                 {
                     case "Priority":
-                        foundTasks = tasks.Where(x => x.Priority.Name.StartsWith(SearchValue));
+                        foundTasks = tasks.Where(x => x.Priority.Name.ToLower().Contains(SearchValue.ToLower()));
                         break;
                     case "State":
-                        foundTasks = tasks.Where(x => x.State.Name.StartsWith(SearchValue));
+                        foundTasks = tasks.Where(x => x.State.Name.ToLower().Contains(SearchValue.ToLower()));
                         break;
                     default:
-                        foundTasks = tasks.Where(x => x.Name.StartsWith(SearchValue));
+                        foundTasks = tasks.Where(x => x.Name.ToLower().Contains(SearchValue.ToLower()));
                         break;
                 }
 
