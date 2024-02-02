@@ -105,22 +105,22 @@ namespace ToDoList.Controllers
                 return View(model);
             }
 
-            model.User.PasswordHash = _userManager.PasswordHasher.HashPassword(model.User, model.User.PasswordHash);
-
             UserEntity? foundUser = await _userManager.FindByNameAsync(model.User.UserName);
 
             if(foundUser == null)
             {
                 ModelState.AddModelError(string.Empty, "User not found");
                 return View();
-            } 
+            }
 
             var result = _userManager.PasswordHasher.VerifyHashedPassword(foundUser, foundUser.PasswordHash, model.User.PasswordHash);
-            if(result == PasswordVerificationResult.Success)
+            if(result != PasswordVerificationResult.Success)
             {
-                ModelState.AddModelError(string.Empty, "Wrong password");
+                ModelState.AddModelError(string.Empty, "Incorrect password");
                 return View();
             }
+
+            model.User.PasswordHash = _userManager.PasswordHasher.HashPassword(model.User, model.User.PasswordHash);
 
             await SignInUser(foundUser);
 
