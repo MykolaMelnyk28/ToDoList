@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using ToDoList.DB;
 using ToDoList.Models.Task;
@@ -45,12 +46,16 @@ namespace ToDoList.Controllers
             {
                 return BadRequest();
             }
+            else if (string.IsNullOrWhiteSpace(task.Content))
+            {
+                task.Content = string.Empty;
+            }
 
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return View("Create");
             }
-
+            
             bool result = await _taskManager.CreateTaskAsync(task);
             return (result) ? RedirectToAction("Index", "Home") : View("Create");
         }
@@ -78,9 +83,13 @@ namespace ToDoList.Controllers
             if(task == null)
             {
                 return BadRequest();
+            } 
+            else if (string.IsNullOrWhiteSpace(task.Content))
+            {
+                task.Content = string.Empty;
             }
 
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return View("Create");
             }

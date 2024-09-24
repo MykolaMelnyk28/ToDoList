@@ -72,10 +72,13 @@
                         <span class="title-priority">@(task.Priority.Name ?? "")</span>
                     </div>
                     <div class="card-body">
+                    @if(!string.IsNullOrWhiteSpace(task.Content))
+                    {
                         <div class="field-content">
-                            <p class="card-text text-content">@task.Content</p>
+                            <p class="card-text text-content">@(task.Content ?? "")</p>
                         </div>
                         <hr />
+                    }
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex justify-content-between">
                                 <form class="mx-2" method="post" asp-controller="Task" asp-action="Delete" asp-route-id="@task.Id">
