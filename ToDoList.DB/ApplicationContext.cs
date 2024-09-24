@@ -17,7 +17,7 @@ namespace ToDoList.DB
 			Database.EnsureCreated();
 		}
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			modelBuilder.Entity<PriorityEntity>(x =>
 			{

@@ -10,7 +10,11 @@ var builder = WebApplication.CreateBuilder();
 builder.Services.AddControllersWithViews();
 
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connectionString));
+string dbVersion = builder.Configuration["DatabaseVersion"];
+
+builder.Services.AddDbContext<ApplicationContext>(options => {
+	options.UseMySql(connectionString, new MySqlServerVersion(Version.Parse(dbVersion)));
+});
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
 {
 	options.LoginPath = "/Home/Index";
